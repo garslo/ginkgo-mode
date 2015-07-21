@@ -145,15 +145,17 @@
 	(shell-command (format "ginkgo generate %s" gen-file))))
 
 (defun ginkgo--make-keymap ()
-  (let ((map (make-sparse-keymap)))
-	(define-key map (kbd "C-c st") 'ginkgo-set-test-dir)
-	(define-key map (kbd "C-c ta") 'ginkgo-run-all)
-	(define-key map (kbd "C-c tt") 'ginkgo-run-this-container)
-	(define-key map (kbd "C-c tl") 'ginkgo-run-last)
-	(define-key map (kbd "C-c tp") 'ginkgo-toggle-pwd-as-test-dir)
-	(define-key map (kbd "C-c gg") 'ginkgo-generate)
-	(define-key map (kbd "C-c gb") 'ginkgo-bootstrap)
-	map))
+  (if ginkgo-use-default-keys
+	  (let ((map (make-sparse-keymap)))
+		(define-key map (kbd "C-c st") 'ginkgo-set-test-dir)
+		(define-key map (kbd "C-c ta") 'ginkgo-run-all)
+		(define-key map (kbd "C-c tt") 'ginkgo-run-this-container)
+		(define-key map (kbd "C-c tl") 'ginkgo-run-last)
+		(define-key map (kbd "C-c tp") 'ginkgo-toggle-pwd-as-test-dir)
+		(define-key map (kbd "C-c gg") 'ginkgo-generate)
+		(define-key map (kbd "C-c gb") 'ginkgo-bootstrap)
+		map)
+	nil))
 
 (define-minor-mode ginkgo-mode
   "Minor mode for ginkgo"
