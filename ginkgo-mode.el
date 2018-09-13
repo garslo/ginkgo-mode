@@ -75,6 +75,14 @@
    ((string= "" ginkgo-test-dir) (setq ginkgo-test-dir (ginkgo--prompt)))
    (t ginkgo-test-dir)))
 
+(defun ginkgo--get-binary ()
+  (if (not (string= ginkgo-binary "ginkgo"))
+	  ginkgo-binary
+	(let ((gopath-ginkgo (concat (getenv "GOPATH") "/bin/ginkgo")))
+	(if (file-exists-p gopath-ginkgo)
+		gopath-ginkgo
+	  ginkgo-binary))))
+
 ;;;###autoload
 (defun ginkgo-set-test-dir ()
   "Sets `ginkgo-test-dir'"
@@ -87,7 +95,7 @@
 	(let ((default-directory (concat (ginkgo--get-test-dir) "/"))
 		  (arg-string (mapconcat 'identity args " ")))
 	  (pop-to-buffer ginkgo-output-buffer)
-	  (async-shell-command (format "%s -noisyPendings=false %s" ginkgo-binary arg-string) ginkgo-output-buffer)
+	  (async-shell-command (format "%s %s" (ginkgo--get-binary) arg-string) ginkgo-output-buffer)
 	  (message (format "running \"ginkgo %s\" in dir %s" arg-string default-directory)))))
 
 ;;;###autoload
