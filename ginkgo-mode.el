@@ -57,6 +57,12 @@
   :group 'ginkgo
   :safe 'string)
 
+(defcustom ginkgo-flags ""
+  "Flags always added to the ginkgo command. Useful for build tags!"
+  :type 'string
+  :group 'ginkgo
+  :safe 'string)
+
 (defvar ginkgo-use-pwd-as-test-dir nil
   "Always use the current working directory as the test directory")
 
@@ -95,7 +101,7 @@
 	(let ((default-directory (concat (ginkgo--get-test-dir) "/"))
 		  (arg-string (mapconcat 'identity args " ")))
 	  (pop-to-buffer ginkgo-output-buffer)
-	  (async-shell-command (format "%s %s" (ginkgo--get-binary) arg-string) ginkgo-output-buffer)
+	  (async-shell-command (format "%s %s %s" (ginkgo--get-binary) ginkgo-flags arg-string) ginkgo-output-buffer)
 	  (message (format "running \"ginkgo %s\" in dir %s" arg-string default-directory)))))
 
 ;;;###autoload
