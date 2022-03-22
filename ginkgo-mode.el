@@ -139,6 +139,37 @@
   (ginkgo--update-lighter)
   (message "ginkgo-use-pwd-as-test-dir is %s" ginkgo-use-pwd-as-test-dir))
 
+;;;###autoload
+(defun ginkgo-focus-this-container ()
+  "Hide everything except this test and the BeforeEach and AfterEach blocks that run as part of this test."
+  (interactive)
+  (if (not hs-minor-mode)
+      (message "hs-minor-mode is not turned on. Turn it on by %s"
+               (substitute-command-keys "\\[hs-minor-mode]"))
+    (save-excursion
+      (let ((location (point)))
+        ;; hide all blocks
+        (hs-hide-all)
+        ;; show one level at a time until the test is visible
+        (while (hs-already-hidden-p)
+          (hs-show-block)
+          (hs-hide-level 1)
+          (goto-char location))
+        ;; show all BeforeEach & AfterEach blocks that are visible
+        (goto-char (point-min))
+        (while (search-forward-regexp "^\t+\\(\\(Just\\)?BeforeEach\\|AfterEach\\)")
+          (let ((overlay (hs-already-hidden-p)))
+            (unless (and overlay
+                         (< (overlay-start overlay) (point))
+                         (> (overlay-end overlay) (point)))
+              (hs-show-block))))))))
+
+;;;###autoload
+(defun ginkgo-focus-reset ()
+  "Reset the focus and show every test (reverts the effect of 'ginkgo-focus-this-container)."
+  (interactive)
+  (hs-show-all))
+
 (defun ginkgo--update-lighter ()
   (setcar (cdr (assq 'ginkgo-mode minor-mode-alist)) (ginkgo--lighter)))
 
@@ -159,17 +190,18 @@
 	(shell-command (format "ginkgo generate %s" gen-file))))
 
 (defun ginkgo--make-keymap ()
-  (if ginkgo-use-default-keys
-	  (let ((map (make-sparse-keymap)))
-		(define-key map (kbd "C-c st") 'ginkgo-set-test-dir)
-		(define-key map (kbd "C-c ta") 'ginkgo-run-all)
-		(define-key map (kbd "C-c tt") 'ginkgo-run-this-container)
-		(define-key map (kbd "C-c tl") 'ginkgo-run-last)
-		(define-key map (kbd "C-c tp") 'ginkgo-toggle-pwd-as-test-dir)
-		(define-key map (kbd "C-c gg") 'ginkgo-generate)
-		(define-key map (kbd "C-c gb") 'ginkgo-bootstrap)
-		map)
-	nil))
+  (when ginkgo-use-default-keys
+    (let ((map (make-sparse-keymap)))
+      (define-key map (kbd "C-c st") 'ginkgo-set-test-dir)
+      (define-key map (kbd "C-c ta") 'ginkgo-run-all)
+      (define-key map (kbd "C-c tt") 'ginkgo-run-this-container)
+      (define-key map (kbd "C-c tl") 'ginkgo-run-last)
+      (define-key map (kbd "C-c tp") 'ginkgo-toggle-pwd-as-test-dir)
+      (define-key map (kbd "C-c gg") 'ginkgo-generate)
+      (define-key map (kbd "C-c gb") 'ginkgo-bootstrap)
+      (define-key map (kbd "C-c ft") 'ginkgo-focus-this-container)
+      (define-key map (kbd "C-c fr") 'ginkgo-focus-reset)
+      map)))
 
 (define-minor-mode ginkgo-mode
   "Minor mode for ginkgo"
